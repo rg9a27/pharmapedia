@@ -1,10 +1,22 @@
 package in.ac.miet.decoders.pharmapedia;
 
+import android.Manifest;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -14,9 +26,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.maps.model.LatLng;
+
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,11 +44,18 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener , LocationListener{
 
     private EditText searchedWord;
+    private Button searchButton;
+    final static int PERMISSION_ALL = 1;
+    final static  String[] PERMISSIONS = {android.Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
+    private LocationManager locationManager;
+    private LatLng myCoordinates;
     private String JSONString;
-    private String json_string;
+    private String word;
+    private JSONObject jsonObj;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +83,23 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         searchedWord = (EditText)findViewById(R.id.search_box);
+
+        searchButton=(Button)findViewById(R.id.search_button);
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                word=searchedWord.getText().toString();
+                new BackgroundTask().execute();
+            }
+        });
+
+        locationManager = (LocationManager)getSystemService((Context.LOCATION_SERVICE));
+        if(Build.VERSION.SDK_INT>=23 && !isPermissionGranted()){
+            requestPermissions(PERMISSIONS,PERMISSION_ALL);
+        } else requestLocation();
+
+        if(!isLocationEnabled())
+            showAlert(1);
 
     }
 
@@ -115,8 +156,82 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    public void getJson(View view){
-        new BackgroundTask().execute();
+    @Override
+    public void onLocationChanged(Location location) {
+        LatLng myCoordinates = new LatLng(location.getLatitude(),location.getLongitude());
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+
+    }
+
+    private void requestLocation() throws  SecurityException{
+        Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        criteria.setPowerRequirement(Criteria.POWER_HIGH);
+        String provider = locationManager.getBestProvider(criteria,true);
+        locationManager.requestLocationUpdates(provider,10000,10, this);
+    }
+
+    private boolean isLocationEnabled(){
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+    }
+
+    private boolean isPermissionGranted(){
+        if(checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED || checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED){
+            Log.v("mylog","Permission is granted");
+            return true;
+        } else {
+            Log.v("mylog","Permission not granted");
+            return false;
+        }
+    }
+
+    private void showAlert(final int status){
+        String message,title,btnText;
+        if(status == 1){
+            message = "Your Location Settings is set to 'Off'.\nPlease Enable Location to use this app";
+            title = "Enable Location";
+            btnText = "Location Settings";
+        } else {
+            message = "Please allow this app to access location!";
+            title = "Permission access";
+            btnText ="Grant";
+        }
+        final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setCancelable(false);
+        dialog.setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(btnText, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if(status == 1){
+                            Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            startActivity(myIntent);
+                        } else
+                            requestPermissions(PERMISSIONS,PERMISSION_ALL);
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        finish();
+                    }
+                });
+        dialog.show();
     }
 
     class BackgroundTask extends AsyncTask<Void, Void, String> {
@@ -125,7 +240,7 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         protected  void onPreExecute(){
-            json_url= "";
+            json_url= "https://pharmapedia.herokuapp.com/medicine?search="+word;
         }
 
         @Override
@@ -136,17 +251,20 @@ public class MainActivity extends AppCompatActivity
                 InputStream inputStream = httpURLConnection.getInputStream();
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
                 StringBuilder stringBuilder = new StringBuilder();
-                while((JSONString = bufferedReader.readLine())!= null){
-                    stringBuilder.append(JSONString+"\n");
+                while((JSONString = bufferedReader.readLine())!=null) {
+                    stringBuilder.append(JSONString + "\n");
                 }
                 bufferedReader.close();
                 inputStream.close();
                 httpURLConnection.disconnect();
-                return  stringBuilder.toString().trim();
+                String json = stringBuilder.toString().trim();
+                return  json;
 
             }catch(MalformedURLException e){
                 e.printStackTrace();
+
             }catch (IOException e){
+
                 e.printStackTrace();
             }
             return  null;
@@ -159,21 +277,11 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         protected  void onPostExecute(String result){
-            TextView textView=(TextView)findViewById(R.id.textview);
-            textView.setText(result);
-            json_string=result;
-        }
-    }
-
-    public void parseJSON(View view){
-
-        if(json_string == null){
-            Toast.makeText(getApplicationContext(),"First get json",Toast.LENGTH_LONG).show();
-        }
-        else{
-            Intent intent = new Intent(this,DisplayListView.class);
-            intent.putExtra("json_data",json_string);
-            startActivity(intent);
+            //    TextView textView=(TextView)findViewById(R.id.textview);
+            //     textView.setText(result);
+            Intent i = new Intent(MainActivity.this,DisplayListView.class);
+            i.putExtra("json_object",result);
+            startActivity(i);
         }
     }
 }

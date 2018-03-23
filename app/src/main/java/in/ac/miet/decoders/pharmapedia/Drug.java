@@ -1,99 +1,79 @@
 package in.ac.miet.decoders.pharmapedia;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 /**
  * Created by Rahul Gupta on 15-03-2018.
  */
 
 public class Drug {
 
-    private String drugId;
-    private String drugName;
-    private double drugPrice;
-    private String manufacturerName;
-    private int drugQuantity;
-    private boolean isBlackListed = false;
-    private String[] drugSalts;
-    private String drugClass;
-    private String drugMode;
-    private boolean isOTC = false;
+    private String bname;
+    private String gname;
+    private String mode;
+    private String manufacturer;
+    private String price;
+    private String salts;
 
-    public String getDrugId() {
-        return drugId;
+
+    public Drug(JSONArray drugDetails ) throws JSONException {
+        this.bname = drugDetails.getString(0);
+        this.gname = drugDetails.getString(1);
+        this.mode = drugDetails.getString(2);
+        this.manufacturer = drugDetails.getString(3);
+        this.price = drugDetails.getString(4);
     }
 
-    public void setDrugId(String drugId) {
-        this.drugId = drugId;
+    public String getBname() {
+        return bname;
     }
 
-    public String getDrugName() {
-        return drugName;
+    public void setBname(String bname) {
+        this.bname = bname;
     }
 
-    public void setDrugName(String drugName) {
-        this.drugName = drugName;
+    public String getGname() {
+        return gname;
     }
 
-    public double getDrugPrice() {
-        return drugPrice;
+    public void setGname(String gname) {
+        this.gname = gname;
     }
 
-    public void setDrugPrice(double drugPrice) {
-        this.drugPrice = drugPrice;
+    public String getMode() {
+        return mode;
     }
 
-    public String getManufacturerName() {
-        return manufacturerName;
+    public void setMode(String mode) {
+        this.mode = mode;
     }
 
-    public void setManufacturerName(String manufacturerName) {
-        this.manufacturerName = manufacturerName;
+    public String getManufacturer() {
+        return manufacturer;
     }
 
-    public int getDrugQuantity() {
-        return drugQuantity;
+    public void setManufacturer(String manufacturer) {
+        this.manufacturer = manufacturer;
     }
 
-    public void setDrugQuantity(int drugQuantity) {
-        this.drugQuantity = drugQuantity;
+    public String getPrice() {
+        return price;
     }
 
-    public boolean isBlackListed() {
-        return isBlackListed;
+    public void setPrice(String price) {
+        this.price = price;
     }
 
-    public void setBlackListed(boolean blackListed) {
-        isBlackListed = blackListed;
+    public String getSalts() {
+        return salts;
     }
 
-    public String[] getDrugSalts() {
-        return drugSalts;
+    public void setSalts(String salts){
+        this.salts=salts;
     }
 
-    public void setDrugSalts(String[] drugSalts) {
-        this.drugSalts = drugSalts;
-    }
 
-    public String getDrugClass() {
-        return drugClass;
-    }
 
-    public void setDrugClass(String drugClass) {
-        this.drugClass = drugClass;
-    }
 
-    public String getDrugMode() {
-        return drugMode;
-    }
-
-    public void setDrugMode(String drugMode) {
-        this.drugMode = drugMode;
-    }
-
-    public boolean isOTC() {
-        return isOTC;
-    }
-
-    public void setOTC(boolean OTC) {
-        isOTC = OTC;
-    }
 }

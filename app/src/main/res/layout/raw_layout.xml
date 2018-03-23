@@ -1,13 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="75dp">
+    android:layout_width="match_parent" android:layout_height="wrap_content">
 
     <TextView
-        android:id="@+id/tx_name"
-        android:layout_width="120dp"
-        android:layout_height="match_parent"
-        android:layout_alignParentLeft="true"
-        android:text="Rahul"
+        android:id="@+id/brand"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:text="Alferon"
+        android:textAppearance="?android:textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/generic"
+        android:layout_width="170dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/brand"
+        android:layout_marginStart="52dp"
+        android:layout_marginTop="35dp"
+        android:layout_alignParentRight="true"
+        android:layout_toEndOf="@+id/manufacturer"
+        android:text="interferon alfa-n3" />
+
+    <TextView
+        android:id="@+id/manufacturer"
+        android:layout_width="170dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/brand"
+        android:layout_alignStart="@+id/salts"
         android:gravity="center"
-        android:textAppearance="?android:textAppearanceLarge"/>
+        android:text="Hemispherx Biopharma, Inc" />
+
+    <TextView
+        android:id="@+id/salts"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/manufacturer"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:text="INTERFERON ALFA-N3, 5000000 [arb'U]/mL, Interferon alpha [EPC]" />
+    <TextView
+        android:id="@+id/mode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/generic"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:text="INJECTION"/>
+    <TextView
+        android:id="@+id/price"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/mode"
+        android:layout_alignParentRight="true"
+        android:padding="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="12dp"
+        android:text="391"/>
 </RelativeLayout>
